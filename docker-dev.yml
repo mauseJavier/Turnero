@@ -1,0 +1,43 @@
+
+services:
+  turnero:
+    image: laravelsail/php83-composer
+    container_name: turnero
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8000:8000"
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:11.3
+    container_name: mariadb_db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: turnerodb
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_USER: root
+      MARIADB_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      - mariadb
+
+volumes:
+  dbdata:
