@@ -1,14 +1,18 @@
 
 services:
   turnero:
-    image: laravelsail/php83-composer
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: turnero
-    working_dir: /var/www/html
     volumes:
-      - ./:/var/www/html
+      - .:/var/www/html
+    networks:
+      - redTurnero
+    restart: always
+    #QUITAR LOS PUERTOS Y LA DEPENDENCIA DE MARIADB
     ports:
-      - "8000:8000"
-    command: php artisan serve --host=0.0.0.0 --port=8000
+      - "1234:80"
     depends_on:
       - mariadb
 
@@ -17,7 +21,6 @@ services:
     container_name: mariadb_db
     restart: unless-stopped
     environment:
-      MARIADB_DATABASE: turnerodb
       MARIADB_ROOT_PASSWORD: root
       MARIADB_USER: root
       MARIADB_PASSWORD: root
@@ -25,6 +28,8 @@ services:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
+    networks:
+      - redTurnero
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -36,8 +41,14 @@ services:
       PMA_PASSWORD: root
     ports:
       - "8080:80"
+    networks:
+      - redTurnero
     depends_on:
       - mariadb
 
 volumes:
   dbdata:
+
+networks:
+  redTurnero:
+    driver: bridge
