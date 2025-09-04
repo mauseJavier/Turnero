@@ -11,9 +11,21 @@
                 <x-app-logo />
             </a>
 
+
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+
+                    <flux:navlist.item icon="home" :href="route('empresas.create')" wire:navigate>{{ __('Nueva Empresa') }}</flux:navlist.item>
+
+                </flux:navlist.group>
+
+                <flux:navlist.group :heading="__('Empresas')" class="grid">
+                    @foreach(\App\Models\Empresa::all() as $empresa)
+                        <flux:navlist.item icon="folder" :href="route('empresas.show', $empresa)">
+                            {{ $empresa->nombre }}
+                        </flux:navlist.item>
+                    @endforeach
                 </flux:navlist.group>
             </flux:navlist>
 

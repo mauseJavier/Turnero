@@ -1,3 +1,13 @@
+## Forzar actualización del repositorio local (descartar cambios locales)
+
+Si necesitas actualizar tu repositorio local desde el remoto y descartar todos los cambios locales no confirmados, puedes usar:
+
+```bash
+git fetch --all
+git reset --hard origin/main
+```
+
+Esto sobrescribirá tu rama local con la versión remota y perderás todos los cambios locales no confirmados. Úsalo solo si estás seguro de que no necesitas tus cambios locales.
 # Turnero
 Turnero para administrar empresas
 
