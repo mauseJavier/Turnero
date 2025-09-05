@@ -8,8 +8,19 @@ git reset --hard origin/main
 ```
 
 Esto sobrescribirá tu rama local con la versión remota y perderás todos los cambios locales no confirmados. Úsalo solo si estás seguro de que no necesitas tus cambios locales.
+
 # Turnero
 Turnero para administrar empresas
+
+## Limpiar base de datos y poblarla con datos de ejemplo
+
+Para eliminar todas las tablas, ejecutar las migraciones desde cero y poblar la base de datos con los seeders configurados, usa:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Este comando borra todas las tablas, ejecuta todas las migraciones y luego ejecuta los seeders definidos en `DatabaseSeeder`. Es útil para reiniciar el estado de la base de datos durante el desarrollo.
 
 ## Desarrollo con Docker Compose
 

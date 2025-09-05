@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('tipo'); // ej: "cancha", "sala", "silla", "consultorio"
             $table->integer('capacidad')->default(1);
             $table->boolean('activo')->default(true);
+            $table->time('inicio_turno')->nullable(); // Campo para el inicio de turno
             $table->timestamps();
             
             $table->index(['empresa_id', 'tipo', 'activo']);
