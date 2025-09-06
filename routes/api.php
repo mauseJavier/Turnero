@@ -23,10 +23,24 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+
+    // quiero ver los permisos del usuario autenticado todo en una sola respuesta y el role que tiene
+    // return $request->user()->roles; // devuelve un array de roles
+    // return $request->user()->getRoleNames(); // devuelve un array de nombres de roles
+    // return $request->user()->permissions; // devuelve un array de permisos
+    // return $request->user()->getAllPermissions(); // devuelve un array de permisos con sus nombres
+    // return $request->user()->hasRole('admin'); // devuelve true o false
+    // return $request->user()->hasPermissionTo('edit users'); // devuelve true o false
+    return response()->json([
+        'user' => $request->user(),
+        // 'usuarioRol' => $request->user()->getRoleNames(),
+        // 'usuarioPermisos' => $request->user()->permissions,
+        'roles' => $request->user()->getRoleNames(),
+        'permissions' => $request->user()->getAllPermissions()->pluck('name'),
+    ]);
 });
 
-Route::middleware([ 'role:admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // Ruta de pruebas
     Route::get('prueba', function (Request $request) {
