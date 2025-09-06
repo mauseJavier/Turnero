@@ -25,10 +25,29 @@ class TurnoController extends Controller
     {
         //  return response()->json($request->all());
 
+
+        if(!isset($request->fecha)) {
+            return response()->json([
+                'message' => 'La fecha es requerida.',
+                'errors' => ['fecha' => ['Fecha requerida']],
+                'formato' => 'http://localhost:1234/api/turnosdisponibles?empresa_id=1&fecha=06-09-2025',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+        if(!isset($request->empresa_id)) {
+            return response()->json([
+                'message' => 'El ID de la empresa es requerido.',
+                'errors' => ['empresa_id' => ['Empresa requerida']],
+                'formato' => 'http://localhost:1234/api/turnosdisponibles?empresa_id=1&fecha=06-09-2025',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+
         $validated = $request->validate([
             'empresa_id' => 'required|exists:empresas,id',
             'fecha' => 'required|date',
         ]);
+
+
 
         $empresa = \App\Models\Empresa::findOrFail($validated['empresa_id']);
         $fecha = $validated['fecha'];

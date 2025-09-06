@@ -52,4 +52,12 @@ class Empresa extends Model
     {
         return $this->hasMany(Turno::class);
     }
+
+    /**
+     * Relación: Una empresa tiene muchos usuarios
+     */
+    public function usuarios(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
 }

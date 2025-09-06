@@ -59,4 +59,12 @@ class User extends Authenticatable
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
+
+    /**
+     * Relación: Un usuario pertenece a una empresa
+     */
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
 }

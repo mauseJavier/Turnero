@@ -49,27 +49,44 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
 });
 
+Route::middleware(['auth:sanctum', 'can:edit users'])->group(function () {
+
+    // Ruta de pruebas
+    Route::get('prueba2', function (Request $request) {
+        return response()->json(['message' => '¡Ruta de pruebas exitosa!']);
+    });
+
+});
 
 
-// Rutas de recursos para la gestión de turnos
-Route::apiResource('empresas', EmpresaController::class);
-Route::apiResource('clientes', ClienteController::class);
-Route::apiResource('servicios', ServicioController::class);
-Route::apiResource('recursos', RecursoController::class);
-Route::apiResource('turnos', TurnoController::class);
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
-// Rutas adicionales para funcionalidades específicas de turnos
-Route::post('turnos/calcular-hora-fin', [TurnoController::class, 'calcularHoraFin']);
-Route::get('turnos/fecha-recurso', [TurnoController::class, 'porFechaYRecurso']);
+    // Rutas de recursos para la gestión de turnos
+    Route::apiResource('empresas', EmpresaController::class);
+    Route::apiResource('clientes', ClienteController::class);
+    Route::apiResource('servicios', ServicioController::class);
+    Route::apiResource('recursos', RecursoController::class);
+    Route::apiResource('turnos', TurnoController::class);
 
-// Listar turnos disponibles por recurso (custom)
-Route::get('turnosdisponibles', [TurnoController::class, 'listarTurnosDisponiblesPorRecurso']);
+    // Rutas adicionales para funcionalidades específicas de turnos
+    Route::post('turnos/calcular-hora-fin', [TurnoController::class, 'calcularHoraFin']);
+    Route::get('turnos/fecha-recurso', [TurnoController::class, 'porFechaYRecurso']);
 
-// Crear turno (addTurno, custom, igual a store pero con validación de disponibilidad)
-Route::post('turnos/add', [TurnoController::class, 'addTurno']);
+    // Listar turnos disponibles por recurso (custom)
+    Route::get('turnosdisponibles', [TurnoController::class, 'listarTurnosDisponiblesPorRecurso']);
 
-// Ruta adicional para verificar disponibilidad de recursos
-Route::post('recursos/{recurso}/verificar-disponibilidad', [RecursoController::class, 'verificarDisponibilidad']);
+    // Crear turno (addTurno, custom, igual a store pero con validación de disponibilidad)
+    Route::post('turnos/add', [TurnoController::class, 'addTurno']);
+
+    // Ruta adicional para verificar disponibilidad de recursos
+    Route::post('recursos/{recurso}/verificar-disponibilidad', [RecursoController::class, 'verificarDisponibilidad']);
+
+
+
+});
+
+
+
 
 
 
