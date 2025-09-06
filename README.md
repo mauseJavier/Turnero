@@ -9,8 +9,81 @@ git reset --hard origin/main
 
 Esto sobrescribirá tu rama local con la versión remota y perderás todos los cambios locales no confirmados. Úsalo solo si estás seguro de que no necesitas tus cambios locales.
 
+
 # Turnero
 Turnero para administrar empresas
+
+## Endpoints API para gestión de turnos
+
+### Listar turnos disponibles por recurso
+
+`GET /api/turnos/disponibles-por-recurso?empresa_id=ID&fecha=YYYY-MM-DD`
+
+**Parámetros:**
+- `empresa_id` (int, requerido): ID de la empresa
+- `fecha` (string, requerido): Fecha en formato `YYYY-MM-DD`
+
+**Respuesta:**
+```json
+{
+	"Recurso 1": {
+		"slots": [
+			{"servicio": "Servicio A", "inicio": "2025-09-05 08:00", "fin": "2025-09-05 08:30"},
+			// ...
+		],
+		"cantidad_servicios_disponibles": 5
+	},
+	// ...
+}
+```
+
+**Ejemplo:**
+```bash
+curl -X GET "http://localhost:8000/api/turnos/disponibles-por-recurso?empresa_id=1&fecha=2025-09-05"
+```
+
+### Crear un turno (addTurno)
+
+`POST /api/turnos/add`
+
+**Body:**
+```json
+{
+	"empresa_id": 1,
+	"cliente_id": 1,
+	"servicio_id": 1,
+	"recurso_id": 1,
+	"fecha_hora_inicio": "2025-09-05 20:00"
+}
+```
+
+**Respuesta:**
+```json
+{
+	"id": 123,
+	"empresa_id": 1,
+	"cliente_id": 1,
+	"servicio_id": 1,
+	"recurso_id": 1,
+	"fecha_hora_inicio": "2025-09-05 20:00",
+	"fecha_hora_fin": "2025-09-05 20:30",
+	"estado": "pendiente",
+	// ...
+}
+```
+
+**Ejemplo:**
+```bash
+curl -X POST "http://localhost:8000/api/turnos/add" \
+	-H "Content-Type: application/json" \
+	-d '{
+		"empresa_id": 1,
+		"cliente_id": 1,
+		"servicio_id": 1,
+		"recurso_id": 1,
+		"fecha_hora_inicio": "2025-09-05 20:00"
+	}'
+```
 
 ## Limpiar base de datos y poblarla con datos de ejemplo
 

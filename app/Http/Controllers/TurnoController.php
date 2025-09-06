@@ -11,6 +11,108 @@ use Illuminate\Http\Response;
 
 class TurnoController extends Controller
 {
+
+    public function prueba(Request $request)
+    {
+        // return response()->json(['message' => 'API is working']);
+        return response()->json($request->all());
+    }
+    /**
+     * Listar todos los turnos disponibles del día por recurso
+     * GET /api/turnos/disponibles-por-recurso?empresa_id=...&fecha=...
+     */
+    public function listarTurnosDisponiblesPorRecurso(Request $request)
+    {
+        //  return response()->json($request->all());
+
+        $validated = $request->validate([
+            'empresa_id' => 'required|exists:empresas,id',
+            'fecha' => 'required|date',
+        ]);
+
+        $empresa = \App\Models\Empresa::findOrFail($validated['empresa_id']);
+        $fecha = $validated['fecha'];
+        $finDia = Carbon::parse($fecha)->endOfDay();
+        $resultados = [];
+
+        foreach ($empresa->recursos as $recurso) {
+            $slots = [];
+            $inicioTurno = $recurso->inicio_turno ? Carbon::parse($fecha.' '.$recurso->inicio_turno) : Carbon::parse($fecha)->startOfDay();
+            foreach ($empresa->servicios as $servicio) {
+                $duracion = $servicio->duracion_minutos;
+                $horaActual = $inicioTurno->copy();
+                while ($horaActual->addMinutes(0)->lessThan($finDia)) {
+                    $horaFin = $horaActual->copy()->addMinutes($duracion);
+                    if ($horaFin->greaterThan($finDia)) break;
+                    $turnosSuperpuestos = Turno::where('recurso_id', $recurso->id)
+                        ->where('estado', '!=', 'cancelado')
+                        ->where(function($q) use ($horaActual, $horaFin) {
+                            $q->where('fecha_hora_inicio', '<', $horaFin)
+                              ->where('fecha_hora_fin', '>', $horaActual);
+                        })
+                        ->exists();
+                    if (! $turnosSuperpuestos) {
+                        $slots[] = [
+                            'servicio' => $servicio->nombre,
+                            'inicio' => $horaActual->format('Y-m-d H:i'),
+                            'fin' => $horaFin->format('Y-m-d H:i'),
+                        ];
+                    }
+                    $horaActual->addMinutes($duracion);
+                }
+            }
+            $resultados[$recurso->nombre] = [
+                'slots' => $slots,
+                'cantidad_servicios_disponibles' => count($slots)
+            ];
+        }
+        return response()->json($resultados);
+    }
+
+    /**
+     * Crear un turno (addTurno)
+     * POST /api/turnos/add
+     */
+    public function addTurno(Request $request)
+    {
+        $validated = $request->validate([
+            'empresa_id' => 'required|exists:empresas,id',
+            'cliente_id' => 'required|exists:clientes,id',
+            'servicio_id' => 'required|exists:servicios,id',
+            'recurso_id' => 'required|exists:recursos,id',
+            'fecha_hora_inicio' => 'required|date',
+        ]);
+
+        $servicio = Servicio::where('id', $validated['servicio_id'])
+            ->where('empresa_id', $validated['empresa_id'])
+            ->firstOrFail();
+        $recurso = Recurso::where('id', $validated['recurso_id'])
+            ->where('empresa_id', $validated['empresa_id'])
+            ->firstOrFail();
+
+        $fechaInicio = $validated['fecha_hora_inicio'];
+        $fechaFin = Carbon::parse($fechaInicio)->addMinutes($servicio->duracion_minutos);
+
+        if (! $recurso->estaDisponible($fechaInicio, $fechaFin)) {
+            return response()->json([
+                'message' => 'El recurso no está disponible en ese horario.',
+                'errors' => ['recurso_id' => ['Recurso no disponible']],
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $turno = Turno::create([
+            'empresa_id' => $validated['empresa_id'],
+            'cliente_id' => $validated['cliente_id'],
+            'servicio_id' => $validated['servicio_id'],
+            'recurso_id' => $validated['recurso_id'],
+            'fecha_hora_inicio' => $fechaInicio,
+            'fecha_hora_fin' => $fechaFin,
+            'estado' => 'pendiente',
+        ]);
+
+        return response()->json($turno->load(['empresa', 'cliente', 'servicio', 'recurso']), Response::HTTP_CREATED);
+    }
+
     /**
      * Display a listing of the resource.
      */
