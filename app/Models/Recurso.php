@@ -16,6 +16,7 @@ class Recurso extends Model
         'tipo',
         'capacidad',
         'activo',
+        'inicio_turno',
     ];
 
     protected $casts = [
@@ -36,6 +37,14 @@ class Recurso extends Model
     public function turnos(): HasMany
     {
         return $this->hasMany(Turno::class);
+    }
+
+    /**
+     * Relación: Un recurso puede ser usado por muchos servicios
+     */
+    public function servicios()
+    {
+        return $this->belongsToMany(Servicio::class, 'recurso_servicio');
     }
 
     /**

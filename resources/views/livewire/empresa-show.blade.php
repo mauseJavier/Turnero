@@ -14,6 +14,28 @@
     </div>
 
     <div class="grid md:grid-cols-3 gap-6">
+    <!-- Formulario para asociar servicios con recursos -->
+    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-4 md:col-span-3 mb-6">
+        <h3 class="font-semibold mb-2">Asociar Servicio y Recurso</h3>
+        <form wire:submit.prevent="asociarServicioRecurso" class="space-y-2">
+            @if (session()->has('success_asociacion'))
+                <div class="text-green-600 text-xs">{{ session('success_asociacion') }}</div>
+            @endif
+            <select wire:model="asociar_servicio_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
+                <option value="">Seleccione un servicio</option>
+                @foreach($empresa->servicios as $servicio)
+                    <option value="{{ $servicio->id }}">{{ $servicio->nombre }}</option>
+                @endforeach
+            </select>
+            <select wire:model="asociar_recurso_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
+                <option value="">Seleccione un recurso</option>
+                @foreach($empresa->recursos as $recurso)
+                    <option value="{{ $recurso->id }}">{{ $recurso->nombre }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="w-full bg-accent text-white dark:bg-zinc-700 dark:text-white font-semibold py-1 px-2 rounded text-sm">Asociar Servicio y Recurso</button>
+        </form>
+    </div>
         <!-- Clientes -->
         <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-4">
             <h3 class="font-semibold mb-2">Clientes</h3>
@@ -47,6 +69,12 @@
                 @if (session()->has('success_cliente'))
                     <div class="text-green-600 text-xs">{{ session('success_cliente') }}</div>
                 @endif
+                <select wire:model="cliente_empresa_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
+                    <option value="">Seleccione una empresa</option>
+                    @foreach(App\Models\Empresa::all() as $empresaItem)
+                        <option value="{{ $empresaItem->id }}">{{ $empresaItem->nombre }}</option>
+                    @endforeach
+                </select>
                 <input type="text" wire:model="cliente_nombre" placeholder="Nombre" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <input type="text" wire:model="cliente_apellido" placeholder="Apellido" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <input type="email" wire:model="cliente_email" placeholder="Email" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
@@ -70,6 +98,7 @@
                         <th>Nombre</th>
                         <th>Descripción</th>
                         <th>Duración (minutos)</th>
+                        <th>Recursos asociados</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,6 +107,11 @@
                             <td>{{ $servicio->nombre }}</td>
                             <td>{{ $servicio->descripcion }}</td>
                             <td>{{ $servicio->duracion_minutos }}</td>
+                            <td>
+                                @foreach($servicio->recursos as $recurso)
+                                    <span class="inline-block bg-zinc-200 dark:bg-zinc-700 rounded px-2 py-1 text-xs mr-1 mb-1">{{ $recurso->nombre }}</span>
+                                @endforeach
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -89,6 +123,12 @@
                 <input type="text" wire:model="servicio_nombre" placeholder="Nombre" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <input type="text" wire:model="servicio_descripcion" placeholder="Descripción" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <input type="number" wire:model="servicio_duracion_minutos" placeholder="Duración (minutos)" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
+                <select wire:model="servicio_recurso_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
+                    <option value="">Seleccione un recurso para asociar</option>
+                    @foreach($empresa->recursos as $recurso)
+                        <option value="{{ $recurso->id }}">{{ $recurso->nombre }}</option>
+                    @endforeach
+                </select>
                 <button type="submit" class="w-full bg-accent text-white dark:bg-zinc-700 dark:text-white font-semibold py-1 px-2 rounded text-sm">Agregar Servicio</button>
             </form>
         </div>
@@ -117,6 +157,7 @@
                 @endif
                 <input type="text" wire:model="recurso_nombre" placeholder="Nombre" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <input type="text" wire:model="recurso_tipo" placeholder="Tipo" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
+                <input type="time" wire:model="recurso_inicio_turno" placeholder="Inicio de turno (HH:MM)" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <button type="submit" class="w-full bg-accent text-white dark:bg-zinc-700 dark:text-white font-semibold py-1 px-2 rounded text-sm">Agregar Recurso</button>
             </form>
         </div>
@@ -128,9 +169,7 @@
     <hr>
 
     {{-- // Turnos --}}
-    @if (session()->has('error_turno'))
-        <div class="text-red-600 text-xs">{{ session('error_turno') }}</div>
-    @endif
+
 
     <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-4">
         <h3 class="font-semibold mb-2">Turnos</h3>
@@ -164,16 +203,22 @@
             </tbody>
         </table>
         <form wire:submit.prevent="addTurno" class="space-y-2">
+
             @if (session()->has('success_turno'))
                 <div class="text-green-600 text-xs">{{ session('success_turno') }}</div>
             @endif
-            <select wire:model="turno_cliente_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
-                <option value="">Seleccione un cliente</option>
-                @foreach($empresa->clientes as $cliente)
-                    <option value="{{ $cliente->id }}">{{ $cliente->nombre }} {{ $cliente->apellido }}</option>
-                @endforeach
+
+            @if (session()->has('error_turno'))
+                <div class="text-red-600 text-xs">{{ session('error_turno') }}</div>
+            @endif
+            
+    <select wire:model="turno_cliente_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
+        <option value="">Seleccione un cliente</option>
+        @foreach($empresa->clientes as $cliente)
+            <option value="{{ $cliente->id }}">{{ $cliente->nombre }} {{ $cliente->apellido }}</option>
+        @endforeach
             </select>
-            <select wire:model="turno_servicio_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
+            <select wire:model.live="turno_servicio_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <option value="">Seleccione un servicio</option>
                 @foreach($empresa->servicios as $servicio)
                     <option value="{{ $servicio->id }}">{{ $servicio->nombre }}</option>
@@ -181,7 +226,7 @@
             </select>
             <select wire:model="turno_recurso_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <option value="">Seleccione un recurso</option>
-                @foreach($empresa->recursos as $recurso)
+                @foreach($this->recursosParaServicio as $recurso)
                     <option value="{{ $recurso->id }}">{{ $recurso->nombre }}</option>
                 @endforeach
             </select>
@@ -197,22 +242,30 @@
     <br>
 
     <!-- Listar todos los turnos disponibles del día por recurso -->
+    <!-- Listar todos los turnos disponibles del día por servicio -->
     <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-4 mt-6">
-        <h3 class="font-semibold mb-2">Turnos disponibles por recurso (día)</h3>
-        <form wire:submit.prevent="listarTurnosDisponiblesPorRecurso" class="space-y-2 mb-4">
+        <h3 class="font-semibold mb-2">Turnos disponibles por servicio (día)</h3>
+        <form wire:submit.prevent="listarTurnosDisponiblesPorServicio" class="space-y-2 mb-4">
             <input type="date" wire:model="turno_fecha_listar" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
-            <button type="submit" class="w-full bg-accent text-white dark:bg-zinc-700 dark:text-white font-semibold py-1 px-2 rounded text-sm">Listar turnos por recurso</button>
+            <select wire:model="servicio_filtro_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm mt-2">
+                <option value="">Todos los servicios</option>
+                @foreach($empresa->servicios as $servicio)
+                    <option value="{{ $servicio->id }}">{{ $servicio->nombre }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="w-full bg-accent text-white dark:bg-zinc-700 dark:text-white font-semibold py-1 px-2 rounded text-sm">Listar turnos por servicio</button>
         </form>
-        @if(!empty($turnos_disponibles_por_recurso))
-            @foreach($turnos_disponibles_por_recurso as $recurso => $data)
+        @if(!empty($this->turnos_disponibles_por_servicio))
+            @foreach($this->turnos_disponibles_por_servicio as $servicio => $data)
                 <div class="mb-4">
-                    <h4 class="font-semibold text-sm mb-1">{{ $recurso }}</h4>
-                    <div class="text-xs mb-2">Cantidad de servicios disponibles: <span class="font-bold">{{ $data['cantidad_servicios_disponibles'] }}</span></div>
+                    <h4 class="font-semibold text-sm mb-1">{{ $servicio }}</h4>
+                    <div class="text-xs mb-2">Cantidad de recursos disponibles: <span class="font-bold">{{ $data['cantidad_recursos_disponibles'] }}</span></div>
                     @if(!empty($data['slots']))
                         <table class="w-full text-xs mb-2">
                             <thead>
                                 <tr class="text-left border-b border-zinc-200 dark:border-zinc-700">
                                     <th>Servicio</th>
+                                    <th>Recurso</th>
                                     <th>Inicio</th>
                                     <th>Fin</th>
                                 </tr>
@@ -221,6 +274,49 @@
                                 @foreach($data['slots'] as $slot)
                                     <tr class="border-b border-zinc-100 dark:border-zinc-800">
                                         <td>{{ $slot['servicio'] }}</td>
+                                        <td>{{ $slot['recurso'] }}</td>
+                                        <td>{{ $slot['inicio'] }}</td>
+                                        <td>{{ $slot['fin'] }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <div class="text-xs text-neutral-500">No hay turnos disponibles para este servicio.</div>
+                    @endif
+                </div>
+            @endforeach
+        @else
+            <div class="text-xs text-neutral-500">No hay resultados para mostrar.</div>
+        @endif
+    </div>
+    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-800 p-4 mt-6">
+        <h3 class="font-semibold mb-2">Turnos disponibles por recurso (día)</h3>
+        <form wire:submit.prevent="listarTurnosDisponiblesPorRecurso" class="space-y-2 mb-4">
+            <input type="date" wire:model="turno_fecha_listar" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
+            <button type="submit" class="w-full bg-accent text-white dark:bg-zinc-700 dark:text-white font-semibold py-1 px-2 rounded text-sm">Listar turnos por recurso</button>
+        </form>
+        @if(!empty($turnos_disponibles_por_recurso))
+            @foreach($turnos_disponibles_por_recurso as $recurso => $data)
+            {{-- @dump($data) --}}
+                <div class="mb-4">
+                    <h4 class="font-semibold text-sm mb-1">{{ $recurso }}</h4>
+                    <div class="text-xs mb-2">Cantidad de servicios disponibles: <span class="font-bold">{{ $data['cantidad_servicios_disponibles'] }}</span></div>
+                    @if(!empty($data['slots']))
+                        <table class="w-full text-xs mb-2">
+                            <thead>
+                                <tr class="text-left border-b border-zinc-200 dark:border-zinc-700">
+                                    <th>Servicio</th>
+                                    <th>Recurso</th>
+                                    <th>Inicio</th>
+                                    <th>Fin</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($data['slots'] as $slot)
+                                    <tr class="border-b border-zinc-100 dark:border-zinc-800">
+                                        <td>{{ $slot['servicio'] }}</td>
+                                        <td>{{ $slot['recurso'] }}</td>
                                         <td>{{ $slot['inicio'] }}</td>
                                         <td>{{ $slot['fin'] }}</td>
                                     </tr>

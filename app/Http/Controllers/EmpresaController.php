@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class EmpresaController extends Controller
+
 {
     /**
      * Display a listing of the resource.
@@ -26,6 +27,18 @@ class EmpresaController extends Controller
     {
         return response()->json(['message' => 'Form data for creating empresa']);
     }
+
+    /**
+     * Mostrar todos los servicios de una empresa
+     * GET /api/empresas/{empresa}/servicios
+     */
+    public function servicios($empresaId)
+    {
+        $empresa = \App\Models\Empresa::with('servicios')->findOrFail($empresaId);
+        return response()->json($empresa->servicios);
+    }
+
+
 
     /**
      * Store a newly created resource in storage.

@@ -39,6 +39,14 @@ class Servicio extends Model
     }
 
     /**
+     * Relación: Un servicio puede usar muchos recursos
+     */
+    public function recursos()
+    {
+        return $this->belongsToMany(Recurso::class, 'recurso_servicio');
+    }
+
+    /**
      * Accessor para duración formateada
      */
     public function getDuracionFormateadaAttribute(): string

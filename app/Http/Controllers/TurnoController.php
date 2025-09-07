@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class TurnoController extends Controller
+
 {
 
     public function prueba(Request $request)
@@ -57,7 +58,7 @@ class TurnoController extends Controller
         foreach ($empresa->recursos as $recurso) {
             $slots = [];
             $inicioTurno = $recurso->inicio_turno ? Carbon::parse($fecha.' '.$recurso->inicio_turno) : Carbon::parse($fecha)->startOfDay();
-            foreach ($empresa->servicios as $servicio) {
+            foreach ($recurso->servicios as $servicio) {
                 $duracion = $servicio->duracion_minutos;
                 $horaActual = $inicioTurno->copy();
                 while ($horaActual->addMinutes(0)->lessThan($finDia)) {
@@ -83,6 +84,68 @@ class TurnoController extends Controller
             $resultados[$recurso->nombre] = [
                 'slots' => $slots,
                 'cantidad_servicios_disponibles' => count($slots)
+            ];
+        }
+        return response()->json($resultados);
+    }
+
+    /**
+     * Listar todos los turnos disponibles del día por servicio
+     * GET /api/turnos/disponibles-por-servicio?empresa_id=...&fecha=...&servicio_id=...
+     */
+    public function listarTurnosDisponiblesPorServicio(Request $request)
+    {
+        $validated = $request->validate([
+            'empresa_id' => 'required|exists:empresas,id',
+            'fecha' => 'required|date',
+            'servicio_id' => 'nullable|exists:servicios,id',
+        ]);
+
+        $empresa = \App\Models\Empresa::findOrFail($validated['empresa_id']);
+        $fecha = $validated['fecha'];
+        $finDia = Carbon::parse($fecha)->endOfDay();
+        $servicioId = $validated['servicio_id'] ?? null;
+        $servicios = $empresa->servicios;
+        if ($servicioId) {
+            $servicio = $servicios->where('id', $servicioId)->first();
+            if ($servicio) {
+                $servicios = collect([$servicio]);
+            } else {
+                return response()->json([]);
+            }
+        }
+
+        $resultados = [];
+        foreach ($servicios as $servicio) {
+            $slots = [];
+            foreach ($servicio->recursos as $recurso) {
+                $inicioTurno = $recurso->inicio_turno ? Carbon::parse($fecha.' '.$recurso->inicio_turno) : Carbon::parse($fecha)->startOfDay();
+                $duracion = $servicio->duracion_minutos;
+                $horaActual = $inicioTurno->copy();
+                while ($horaActual->addMinutes(0)->lessThan($finDia)) {
+                    $horaFin = $horaActual->copy()->addMinutes($duracion);
+                    if ($horaFin->greaterThan($finDia)) break;
+                    $turnosSuperpuestos = Turno::where('recurso_id', $recurso->id)
+                        ->where('estado', '!=', 'cancelado')
+                        ->where(function($q) use ($horaActual, $horaFin) {
+                            $q->where('fecha_hora_inicio', '<', $horaFin)
+                              ->where('fecha_hora_fin', '>', $horaActual);
+                        })
+                        ->exists();
+                    if (! $turnosSuperpuestos) {
+                        $slots[] = [
+                            'servicio' => $servicio->nombre,
+                            'recurso' => $recurso->nombre,
+                            'inicio' => $horaActual->format('Y-m-d H:i'),
+                            'fin' => $horaFin->format('Y-m-d H:i'),
+                        ];
+                    }
+                    $horaActual->addMinutes($duracion);
+                }
+            }
+            $resultados[$servicio->nombre] = [
+                'slots' => $slots,
+                'cantidad_recursos_disponibles' => count($slots)
             ];
         }
         return response()->json($resultados);

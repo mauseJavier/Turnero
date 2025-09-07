@@ -75,13 +75,28 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Listar turnos disponibles por recurso (custom)
     Route::get('turnosdisponibles', [TurnoController::class, 'listarTurnosDisponiblesPorRecurso']);
 
-    // Crear turno (addTurno, custom, igual a store pero con validación de disponibilidad)
-    Route::post('turnos/add', [TurnoController::class, 'addTurno']);
-
+    
+    
     // Ruta adicional para verificar disponibilidad de recursos
     Route::post('recursos/{recurso}/verificar-disponibilidad', [RecursoController::class, 'verificarDisponibilidad']);
+    
+    //estos serian los pasos a seguir para solicitar un turno
+    //1. listar servicios de una empresa que ya sabemos cual es
+    //2. seleccionar un servicio
+    //3. listar si turnos disponibles por servicio
+    //4. seleccionar un turno
+    //5confirmar un turno con un pago (esto ya lo tenemos con addTurno)
 
 
+    //ver servicios de una empresa
+    // Mostrar todos los servicios de una empresa
+    Route::get('empresas/{empresa}/servicios', [EmpresaController::class, 'servicios']);
+    
+    // Listar turnos disponibles por servicio (custom)
+    Route::get('turnosdisponiblesporservicio', [TurnoController::class, 'listarTurnosDisponiblesPorServicio']);
+    
+    // Crear turno (addTurno, custom, igual a store pero con validación de disponibilidad)
+    Route::post('turnos/add', [TurnoController::class, 'addTurno']);
 
 });
 
