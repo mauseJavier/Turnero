@@ -20,19 +20,33 @@ class UserSeeder extends Seeder
             'password' => Hash::make('12345678'),
         ]);
 
+        User::create([
+            'name' => 'Gimenez Marcelo',
+            'email' => 'marce_nqn_19@hotmail.com',
+            'password' => Hash::make('12345678'),
+        ]);
+
 
         // Crear roles
+        Role::create(['name' => 'super']);
         Role::create(['name' => 'admin']);
         Role::create(['name' => 'user']);
         
         // Crear permisos
-        Permission::create(['name' => 'edit users']);
-        Permission::create(['name' => 'view users']);
+        Permission::create(['name' => 'editar']);
+        Permission::create(['name' => 'ver']);
+        Permission::create(['name' => 'borrar']);
+        Permission::create(['name' => 'crear']);
 
         // Asignar roles y permisos al usuario
         $user = User::find(1);
-        $user->assignRole('admin');
-        $user->givePermissionTo('edit users');
+        $user->assignRole('super');
+        $user->givePermissionTo('editar', 'ver', 'borrar', 'crear');
+
+                // Asignar roles y permisos al usuario
+        $user = User::find(2);
+        $user->assignRole('super');
+        $user->givePermissionTo('editar', 'ver', 'borrar', 'crear');
 
 
     }

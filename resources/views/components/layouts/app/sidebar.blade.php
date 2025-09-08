@@ -11,35 +11,63 @@
                 <x-app-logo />
             </a>
 
+            @role('super')
+                <flux:navlist variant="outline">
+                    <flux:navlist.group :heading="__('Platform Role Super')" class="grid">
+                        <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+    
+                        <flux:navlist.item icon="home" :href="route('empresas.create')" wire:navigate>{{ __('Nueva Empresa') }}</flux:navlist.item>
+    
+                    </flux:navlist.group>
+    
+                    <flux:navlist.group :heading="__('Empresas')" class="grid">
+                        @foreach(\App\Models\Empresa::all() as $empresa)
+                            <flux:navlist.item icon="folder" :href="route('empresas.show', $empresa)">
+                                {{ $empresa->nombre }}
+                            </flux:navlist.item>
+                        @endforeach
+                    </flux:navlist.group>
+                </flux:navlist>
+    
+                <flux:spacer />
+    
+                <flux:navlist variant="outline">
+                    <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
+                    {{ __('Repository') }}
+                    </flux:navlist.item>
+    
+                    <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
+                    {{ __('Documentation') }}
+                    </flux:navlist.item>
+                </flux:navlist>
+            @endrole
+            
+            @role('admin')
+                
+                <flux:navlist variant="outline">
+                    <flux:navlist.group :heading="__('Platform Role Admin')" class="grid">
 
-            <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')" class="grid">
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                        <flux:navlist.item icon="home" :href="route('empresa.turnos')" :current="request()->routeIs('empresa.turnos')" wire:navigate>{{ __('Turnos') }}</flux:navlist.item>
+                        <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+    
+                    </flux:navlist.group>
+    
+                </flux:navlist>
+    
+                <flux:spacer />
+            @endrole
 
-                    <flux:navlist.item icon="home" :href="route('empresas.create')" wire:navigate>{{ __('Nueva Empresa') }}</flux:navlist.item>
+            {{-- @role('user')
+                usuario comun            
+                
+            @else
+                
+                @dump(auth()->user())
+            
+            @endrole --}}
 
-                </flux:navlist.group>
 
-                <flux:navlist.group :heading="__('Empresas')" class="grid">
-                    @foreach(\App\Models\Empresa::all() as $empresa)
-                        <flux:navlist.item icon="folder" :href="route('empresas.show', $empresa)">
-                            {{ $empresa->nombre }}
-                        </flux:navlist.item>
-                    @endforeach
-                </flux:navlist.group>
-            </flux:navlist>
 
-            <flux:spacer />
-
-            <flux:navlist variant="outline">
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-                </flux:navlist.item>
-
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                {{ __('Documentation') }}
-                </flux:navlist.item>
-            </flux:navlist>
 
             <!-- Desktop User Menu -->
             <flux:dropdown class="hidden lg:block" position="bottom" align="start">

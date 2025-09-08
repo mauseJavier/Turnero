@@ -1,3 +1,88 @@
+# Flujo de prueba de turnos
+    //estos serian los pasos a seguir para solicitar un turno
+    // 1 reconocer el cliente (por telefono)
+    // si no existe, crearlo solicitar datos basicos
+    // si existe, obtener su id
+    //1. listar servicios de una empresa que ya sabemos cual es
+    //2. seleccionar un servicio
+    //3. listar si turnos disponibles por servicio
+    //4. seleccionar un turno
+    //5confirmar un turno con un pago (esto ya lo tenemos con addTurno)
+
+Esta sección documenta el flujo completo para testear la gestión de turnos vía API, incluyendo ejemplos de cada paso.
+
+## 1. Reconocer o crear cliente
+
+Buscar cliente por teléfono:
+
+```bash
+curl -X GET "http://localhost:1234/api/buscarportelefono?telefono=2942506803" -H "Authorization: Bearer <TOKEN>"
+```
+Si el cliente no existe, crear uno:
+
+```bash
+curl -X POST http://localhost:1234/api/clientes -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{
+	"empresa_id": 1,
+	"nombre": "javier",
+	"apellido": "desmaret",
+	"email": "mause.javi@gmail.com",
+	"telefono": "2942506803",
+	"documento": "35833716",
+	"fecha_nacimiento": "2025-04-11",
+	"observaciones": "",
+	"activo": true
+}'
+```
+
+## 2. Listar servicios de la empresa
+
+```bash
+curl -X GET http://localhost:1234/api/empresas/1/servicios -H "Authorization: Bearer <TOKEN>"
+```
+
+## 3. Listar turnos disponibles por servicio
+
+```bash
+curl -X GET "http://localhost:1234/api/turnosdisponiblesporservicio?servicio_id=3&empresa_id=1&fecha=2025-09-07" -H "Authorization: Bearer <TOKEN>"
+```
+
+## 4. Reservar un turno
+
+```bash
+curl -X POST http://localhost:1234/api/turnos/add -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{
+	"empresa_id": 1,
+	"cliente_id": 11,
+	"servicio_id": 3,
+	"recurso_id": 1,
+	"fecha_hora_inicio": "2025-09-07T08:00:00",
+	"fecha_hora_fin": "2025-09-07T09:30:00",
+	"estado": "pendiente"
+}'
+```
+
+## 5. Cancelar un turno
+
+Enviar todos los datos requeridos:
+
+```bash
+curl -X PATCH http://localhost:1234/api/turnos/5 -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{
+	"empresa_id": 1,
+	"cliente_id": 11,
+	"servicio_id": 3,
+	"recurso_id": 1,
+	"fecha_hora_inicio": "2025-09-07T08:00:00",
+	"duracion_personalizada_minutos": null,
+	"estado": "cancelado",
+	"observaciones": "Cancelado por el cliente",
+	"precio_final": null
+}'
+```
+
+## Notas
+- Reemplaza `<TOKEN>` por el token de autenticación válido.
+- Los IDs deben ajustarse según los datos creados en tu entorno.
+
+
 ## Forzar actualización del repositorio local (descartar cambios locales)
 
 Si necesitas actualizar tu repositorio local desde el remoto y descartar todos los cambios locales no confirmados, puedes usar:

@@ -24,6 +24,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Ruta para mostrar los datos de una empresa específica
     Route::get('empresas/{empresa}', \App\Livewire\EmpresaShow::class)->name('empresas.show');
+
+    // Ruta para ver los turnos solicitados de la empresa del usuario logueado
+    Route::get('empresa/turnos', \App\Livewire\EmpresaTurnos::class)->name('empresa.turnos');
 });
 
 require __DIR__.'/auth.php';

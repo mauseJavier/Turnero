@@ -29,6 +29,20 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
         event(new Registered(($user = User::create($validated))));
 
+        // Asignar empresa_id = 1
+        $user->empresa_id = 1;
+        $user->save();
+
+        // Asignar rol y permiso
+        if (!\Spatie\Permission\Models\Role::where('name', 'user')->exists()) {
+            \Spatie\Permission\Models\Role::create(['name' => 'user']);
+        }
+        if (!\Spatie\Permission\Models\Permission::where('name', 'ver')->exists()) {
+            \Spatie\Permission\Models\Permission::create(['name' => 'ver']);
+        }
+        $user->assignRole('user');
+        $user->givePermissionTo('ver');
+
         Auth::login($user);
 
         $this->redirectIntended(route('dashboard', absolute: false), navigate: true);

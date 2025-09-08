@@ -44,8 +44,14 @@ class Cliente extends Model
     /**
      * Accessor para nombre completo
      */
-    public function getNombreCompletoAttribute(): string
-    {
-        return trim($this->nombre.' '.$this->apellido);
-    }
+        public function getNombreCompletoAttribute(): string
+        {
+            // Si ambos existen, los une. Si falta alguno, muestra el que esté.
+            if ($this->nombre && $this->apellido) {
+                return trim($this->nombre . ' ' . $this->apellido);
+            }
+            return $this->nombre ?? $this->apellido ?? '';
+        }
+    
+        protected $appends = ['nombre_completo'];
 }

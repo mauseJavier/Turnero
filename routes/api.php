@@ -20,6 +20,24 @@ use Illuminate\Support\Facades\Route;
 1|mwfuU6gi6i338AufqMhwlKND36mourOuYOyFYNJi2b0199c7
 
 
+
+
+Nuevo Cliente Json 
+
+{
+  "empresa_id": 1,
+  "nombre": "Juan",
+  "apellido": "Pérez",
+  "email": "juan.perez@email.com",
+  "telefono": "123456789",
+  "documento": "12345678",
+  "fecha_nacimiento": "1990-05-20",
+  "observaciones": "Cliente frecuente",
+  "activo": true
+}
+
+
+
 */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -41,6 +59,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+
 
     // Ruta de pruebas
     Route::get('prueba', function (Request $request) {
@@ -81,6 +100,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::post('recursos/{recurso}/verificar-disponibilidad', [RecursoController::class, 'verificarDisponibilidad']);
     
     //estos serian los pasos a seguir para solicitar un turno
+    // 1 reconocer el cliente (por telefono)
+    // si no existe, crearlo solicitar datos basicos
+    // si existe, obtener su id
     //1. listar servicios de una empresa que ya sabemos cual es
     //2. seleccionar un servicio
     //3. listar si turnos disponibles por servicio
@@ -88,15 +110,41 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     //5confirmar un turno con un pago (esto ya lo tenemos con addTurno)
 
 
-    //ver servicios de una empresa
+    // Buscar cliente por teléfono y devolver sus turnos
+    Route::get('buscarportelefono', [ClienteController::class, 'buscarPorTelefono']);
+    //ver servicios de una empresa http://localhost:1234/api/buscarportelefono
+
     // Mostrar todos los servicios de una empresa
     Route::get('empresas/{empresa}/servicios', [EmpresaController::class, 'servicios']);
-    
+    // http://localhost:1234/api/empresas/{empresa}/servicios
+
     // Listar turnos disponibles por servicio (custom)
     Route::get('turnosdisponiblesporservicio', [TurnoController::class, 'listarTurnosDisponiblesPorServicio']);
-    
+    // http://localhost:1234/api/turnosdisponiblesporservicio?servicio_id=1&fecha=2024-07-01&empresa_id=1
+
+
     // Crear turno (addTurno, custom, igual a store pero con validación de disponibilidad)
     Route::post('turnos/add', [TurnoController::class, 'addTurno']);
+    // http://localhost:1234/api/turnos/add
+
+
+
+    //utilizar el UPDATE para modificar un turno y verificar disponibilidad o CANCELAR
+    //    Route::apiResource('turnos', TurnoController::class);
+    //datos necesarios para modificar un turno
+        //     $validated = $request->validate([
+        //     'empresa_id' => 'required|exists:empresas,id',
+        //     'cliente_id' => 'required|exists:clientes,id',
+        //     'servicio_id' => 'required|exists:servicios,id',
+        //     'recurso_id' => 'required|exists:recursos,id',
+        //     'fecha_hora_inicio' => 'required|date',
+        //     'duracion_personalizada_minutos' => 'nullable|integer|min:1|max:1440',
+        //     'estado' => 'in:confirmado,cancelado,completado',
+        //     'observaciones' => 'nullable|string|max:1000',
+        //     'precio_final' => 'nullable|numeric|min:0',
+        // ]);
+
+
 
 });
 

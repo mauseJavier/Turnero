@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class ClienteController extends Controller
+
 {
     /**
      * Display a listing of the resource.
@@ -71,6 +72,32 @@ class ClienteController extends Controller
     {
         return response()->json($cliente);
     }
+
+        /**
+     * Buscar cliente por número de teléfono y devolver sus turnos
+     * GET /api/clientes/buscar-por-telefono?telefono=...
+     */
+    public function buscarPorTelefono(Request $request)
+    {
+        // return response()->json($request->all());
+
+        $validated = $request->validate([
+            'telefono' => 'required|string',
+        ]);
+
+
+        $cliente = \App\Models\Cliente::with(['empresa', 'turnos.servicio', 'turnos.recurso'])
+            ->where('telefono', $validated['telefono'])
+            ->first();
+
+            
+        if (! $cliente) {
+            return response()->json(['message' => 'Cliente no encontrado'], 404);
+        }
+        return response()->json($cliente);
+    }
+
+
 
     /**
      * Update the specified resource in storage.
