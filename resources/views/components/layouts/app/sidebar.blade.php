@@ -48,6 +48,9 @@
                     <flux:navlist.group :heading="__('Platform Role Admin')" class="grid">
 
                         <flux:navlist.item icon="home" :href="route('empresa.turnos')" :current="request()->routeIs('empresa.turnos')" wire:navigate>{{ __('Turnos') }}</flux:navlist.item>
+                        <flux:navlist.item icon="home" :href="route('empresa.turnos-disponibles-por-recurso')" :current="request()->routeIs('empresa.turnos-disponibles-por-recurso')" wire:navigate>{{ __('Turnos Disponibles') }}</flux:navlist.item>
+
+
                         <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
     
                     </flux:navlist.group>

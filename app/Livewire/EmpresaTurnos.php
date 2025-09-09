@@ -20,9 +20,8 @@ class EmpresaTurnos extends Component
         $this->clientes = $empresaId
             ? \App\Models\Cliente::where('empresa_id', $empresaId)->get()
             : collect();
-        $this->filtrarTurnos();
-
         $this->fecha = now()->toDateString();
+        $this->filtrarTurnos();
     }
 
     public function updatedFecha()
