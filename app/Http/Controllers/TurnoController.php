@@ -134,6 +134,8 @@ class TurnoController extends Controller
                         ->exists();
                     if (! $turnosSuperpuestos) {
                         $slots[] = [
+                            'servicio_id' => $servicio->id,
+                            'recurso_id' => $recurso->id,
                             'servicio' => $servicio->nombre,
                             'recurso' => $recurso->nombre,
                             'inicio' => $horaActual->format('Y-m-d H:i'),
@@ -157,13 +159,50 @@ class TurnoController extends Controller
      */
     public function addTurno(Request $request)
     {
-        $validated = $request->validate([
-            'empresa_id' => 'required|exists:empresas,id',
-            'cliente_id' => 'required|exists:clientes,id',
-            'servicio_id' => 'required|exists:servicios,id',
-            'recurso_id' => 'required|exists:recursos,id',
-            'fecha_hora_inicio' => 'required|date',
-        ]);
+        // $validated = $request->validate([
+        //     'empresa_id' => 'required|exists:empresas,id',
+        //     'cliente_id' => 'required|exists:clientes,id',
+        //     'servicio_id' => 'required|exists:servicios,id',
+        //     'recurso_id' => 'required|exists:recursos,id',
+        //     'fecha_hora_inicio' => 'required|date',
+        // ]);
+
+
+        try {
+            $validated = $request->validate([
+                'empresa_id' => 'required|exists:empresas,id',
+                'cliente_id' => 'required|exists:clientes,id',
+                'servicio_id' => 'required|exists:servicios,id',
+                'recurso_id' => 'required|exists:recursos,id',
+                'fecha_hora_inicio' => 'required|date',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Error de validación',
+                'descripcion' => $e->errors()
+            ], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Modelo no encontrado',
+                'descripcion' => 'Uno de los IDs proporcionados no existe en la base de datos.'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error inesperado',
+                'descripcion' => $e->getMessage()
+            ], 500);
+        }
+
+        // Validar que el cliente pertenezca a la empresa
+        $cliente = \App\Models\Cliente::where('id', $validated['cliente_id'])
+            ->where('empresa_id', $validated['empresa_id'])
+            ->first();
+        if (! $cliente) {
+            return response()->json([
+                'message' => 'El cliente no existe para la empresa indicada.',
+                'errors' => ['cliente_id' => ['Cliente no pertenece a la empresa']],
+            ], 200);
+        }
 
         $servicio = Servicio::where('id', $validated['servicio_id'])
             ->where('empresa_id', $validated['empresa_id'])
@@ -305,17 +344,34 @@ class TurnoController extends Controller
      */
     public function update(Request $request, Turno $turno)
     {
-        $validated = $request->validate([
-            'empresa_id' => 'required|exists:empresas,id',
-            'cliente_id' => 'required|exists:clientes,id',
-            'servicio_id' => 'required|exists:servicios,id',
-            'recurso_id' => 'required|exists:recursos,id',
-            'fecha_hora_inicio' => 'required|date',
-            'duracion_personalizada_minutos' => 'nullable|integer|min:1|max:1440',
-            'estado' => 'in:confirmado,cancelado,completado',
-            'observaciones' => 'nullable|string|max:1000',
-            'precio_final' => 'nullable|numeric|min:0',
-        ]);
+        try {
+            $validated = $request->validate([
+                'empresa_id' => 'required|exists:empresas,id',
+                'cliente_id' => 'required|exists:clientes,id',
+                'servicio_id' => 'required|exists:servicios,id',
+                'recurso_id' => 'required|exists:recursos,id',
+                'fecha_hora_inicio' => 'required|date',
+                'duracion_personalizada_minutos' => 'nullable|integer|min:1|max:1440',
+                'estado' => 'in:confirmado,cancelado,completado',
+                'observaciones' => 'nullable|string|max:1000',
+                'precio_final' => 'nullable|numeric|min:0',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Error de validación',
+                'descripcion' => $e->errors()
+            ], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Modelo no encontrado',
+                'descripcion' => 'Uno de los IDs proporcionados no existe en la base de datos.'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error inesperado',
+                'descripcion' => $e->getMessage()
+            ], 500);
+        }
 
         // Verificar que el servicio pertenece a la empresa
         $servicio = Servicio::where('id', $validated['servicio_id'])

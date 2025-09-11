@@ -92,7 +92,7 @@ class ClienteController extends Controller
 
             
         if (! $cliente) {
-            return response()->json(['message' => 'Cliente no encontrado'], 404);
+            return response()->json(['message' => 'Cliente no encontrado'], 200);
         }
         return response()->json($cliente);
     }

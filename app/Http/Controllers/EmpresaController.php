@@ -34,8 +34,34 @@ class EmpresaController extends Controller
      */
     public function servicios($empresaId)
     {
-        $empresa = \App\Models\Empresa::with('servicios')->findOrFail($empresaId);
+    try {
+
+        if (!is_numeric($empresaId) || $empresaId <= 0) {
+            return response()->json([
+                'error' => 'ID inválido',
+                'descripcion' => 'El ID de la empresa debe ser un número entero positivo.'
+            ], 200);
+        }
+
+        $empresa = \App\Models\Empresa::with(['servicios.recursos'])->findOrFail($empresaId);
+        if ($empresa->servicios->isEmpty()) {
+            return response()->json([
+                'error' => 'Sin servicios',
+                'descripcion' => 'La empresa no tiene servicios registrados.'
+            ], 404);
+        }
         return response()->json($empresa->servicios);
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return response()->json([
+            'error' => 'Empresa no encontrada',
+            'descripcion' => 'No se encontró una empresa con el ID proporcionado. Verifica el ID e intenta nuevamente.'
+        ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Error inesperado',
+            'descripcion' => $e->getMessage()
+        ], 500);
+    }
     }
 
 
