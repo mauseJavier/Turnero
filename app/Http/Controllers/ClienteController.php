@@ -83,18 +83,34 @@ class ClienteController extends Controller
 
         $validated = $request->validate([
             'telefono' => 'required|string',
+            'empresa_id' => 'required|exists:empresas,id',
         ]);
 
 
         $cliente = \App\Models\Cliente::with(['empresa', 'turnos.servicio', 'turnos.recurso'])
             ->where('telefono', $validated['telefono'])
+            ->where('empresa_id', $validated['empresa_id'])
             ->first();
 
             
         if (! $cliente) {
             return response()->json(['message' => 'Cliente no encontrado'], 200);
         }
-        return response()->json($cliente);
+        $data = $cliente->toArray();
+        $data['cliente_id'] = $cliente->id;
+        unset($data['id']);
+        // Formatear fechas en los turnos
+        if (isset($data['turnos']) && is_array($data['turnos'])) {
+            foreach ($data['turnos'] as &$turno) {
+                if (isset($turno['fecha_hora_inicio'])) {
+                    $turno['fecha_hora_inicio'] = date('Y-m-d H:i', strtotime($turno['fecha_hora_inicio']));
+                }
+                if (isset($turno['fecha_hora_fin'])) {
+                    $turno['fecha_hora_fin'] = date('Y-m-d H:i', strtotime($turno['fecha_hora_fin']));
+                }
+            }
+        }
+        return response()->json($data);
     }
 
 

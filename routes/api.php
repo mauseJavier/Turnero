@@ -150,6 +150,25 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
 
 
+// ejemplo de curl para modificar un turno cancelar o cambiar fecha/hora
+// curl -X PATCH "http://localhost:1234/api/turnos/23" \
+//   -H "Authorization: Bearer TU_TOKEN_AQUI" \
+//   -H "Content-Type: application/json" \
+//   -d '{
+//     "empresa_id": 1,
+//     "cliente_id": 19,
+//     "servicio_id": 3,
+//     "recurso_id": 2,
+//     "fecha_hora_inicio": "2025-09-16 08:00",
+//     "duracion_personalizada_minutos": 90,
+//     "estado": "confirmado",
+//     "observaciones": "Modificación de turno",
+//     "precio_final": 200
+//   }'
 
 
+// ejemplo de curl para ver los servicios de una empresa
+curl -X GET "https://turnos.llservicios.ar/api/empresas/1/servicios" \
+  -H "Authorization: Bearer KlZJMs42auYO22GKxAkELq2lb37Hh2gJOrpGU3al39765772" \
+  -H "Accept: application/json"
 

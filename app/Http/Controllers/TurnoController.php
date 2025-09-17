@@ -231,7 +231,20 @@ class TurnoController extends Controller
             'estado' => 'pendiente',
         ]);
 
-        return response()->json($turno->load(['empresa', 'cliente', 'servicio', 'recurso']), Response::HTTP_CREATED);
+        $turnoData = $turno->load(['empresa', 'cliente', 'servicio', 'recurso'])->toArray();
+        if (isset($turnoData['fecha_hora_inicio'])) {
+            $turnoData['fecha_hora_inicio'] = date('Y-m-d H:i', strtotime($turnoData['fecha_hora_inicio']));
+        }
+        if (isset($turnoData['fecha_hora_fin'])) {
+            $turnoData['fecha_hora_fin'] = date('Y-m-d H:i', strtotime($turnoData['fecha_hora_fin']));
+        }
+        if (isset($turnoData['created_at'])) {
+            $turnoData['created_at'] = date('Y-m-d H:i', strtotime($turnoData['created_at']));
+        }
+        if (isset($turnoData['updated_at'])) {
+            $turnoData['updated_at'] = date('Y-m-d H:i', strtotime($turnoData['updated_at']));
+        }
+        return response()->json($turnoData, Response::HTTP_CREATED);
     }
 
     /**
