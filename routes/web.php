@@ -46,6 +46,10 @@ Route::middleware(['auth'])->group(function () {
         // Ruta para mostrar los datos de una empresa específica
         Route::get('empresas/{empresa}', \App\Livewire\EmpresaShow::class)->name('empresas.show');
 
+        // Ruta para gestión de usuarios, roles y permisos
+        Route::get('usuarios', function () {
+            return view('usuarios.index');
+        })->name('usuarios.management');
 
     });
 

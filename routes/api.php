@@ -58,7 +58,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     ]);
 });
 
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin|super'])->group(function () {
 
 
     // Ruta de pruebas
@@ -78,7 +78,7 @@ Route::middleware(['auth:sanctum', 'can:edit users'])->group(function () {
 });
 
 
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin|super'])->group(function () {
 
     // Rutas de recursos para la gestión de turnos
     Route::apiResource('empresas', EmpresaController::class);
@@ -168,7 +168,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
 
 // ejemplo de curl para ver los servicios de una empresa
-curl -X GET "https://turnos.llservicios.ar/api/empresas/1/servicios" \
-  -H "Authorization: Bearer KlZJMs42auYO22GKxAkELq2lb37Hh2gJOrpGU3al39765772" \
-  -H "Accept: application/json"
+// curl -X GET "https://turnos.llservicios.ar/api/empresas/1/servicios" \
+//   -H "Authorization: Bearer KlZJMs42auYO22GKxAkELq2lb37Hh2gJOrpGU3al39765772" \
+//   -H "Accept: application/json"
 

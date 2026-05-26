@@ -1,33 +1,51 @@
+
 services:
-  turnero:
-    image: turnero:prod
+  localturnero:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: turnero
-    env_file:
-      - .env
-    environment:
-      - APP_ENV=production
-      - APP_DEBUG=false
+    image: turnerolocal:local
+    container_name: localturnero
     volumes:
       - ./.env:/var/www/html/.env:ro
       - ./storage:/var/www/html/storage
+      - ./app:/var/www/html/app
+      - ./resources:/var/www/html/resources
+      - ./routes:/var/www/html/routes
+      - ./config:/var/www/html/config
+      - ./public:/var/www/html/public
     networks:
       - redPrincipal
     restart: always
+    #QUITAR LOS PUERTOS Y LA DEPENDENCIA DE MARIADB
+    ports:
+      - "1212:80"
+    # depends_on:
+    #   - mariadb
 
-  turnero-scheduler:
-    image: turnero:prod
+  localturnero-scheduler:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: turnero-scheduler
-    env_file:
-      - .env
-    environment:
-      - APP_ENV=production
-      - APP_DEBUG=false
+    image: turnerolocal:local
+    container_name: localturnero-scheduler
+    volumes:
+      - ./.env:/var/www/html/.env:ro
+      - ./storage:/var/www/html/storage
+    entrypoint: ["/bin/sh", "-c", "chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache && while true; do php /var/www/html/artisan schedule:run --no-interaction & sleep 60; done"]
+    networks:
+      - redPrincipal
+    restart: always
+    #QUITAR EL SERVICIO DE MARIA DB 
+    # depends_on:
+    #   - mariadb
+
+  localturnero-queue-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: turnerolocal:local
+    container_name: localturnero-queue-worker
     volumes:
       - ./.env:/var/www/html/.env:ro
       - ./storage:/var/www/html/storage
@@ -39,43 +57,9 @@ services:
           chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
           touch /tmp/permissions_set
         fi
+        # Loop infinito para auto-reinicio
         while true; do
-          php /var/www/html/artisan schedule:work --verbose --no-interaction
-          echo "Scheduler stopped. Restarting in 5 seconds..."
-          sleep 5
-        done
-    stdin_open: true
-    tty: true
-    healthcheck:
-      disable: true
-    networks:
-      - redPrincipal
-    restart: always
-
-  turnero-queue-worker:
-    image: turnero:prod
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: turnero-queue-worker
-    env_file:
-      - .env
-    environment:
-      - APP_ENV=production
-      - APP_DEBUG=false
-    volumes:
-      - ./.env:/var/www/html/.env:ro
-      - ./storage:/var/www/html/storage
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        if [ ! -f /tmp/permissions_set ]; then
-          chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-          chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-          touch /tmp/permissions_set
-        fi
-        while true; do
-          php /var/www/html/artisan queue:work \
+          php /var/www/html/artisan queue:work --verbose \
             --sleep=3 \
             --tries=3 \
             --max-time=3600 \
@@ -90,7 +74,7 @@ services:
       - redPrincipal
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'queue:work' || exit 1"]
+      test: ["CMD-SHELL", "ps aux | grep -q 'queue:work' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -98,3 +82,4 @@ services:
 networks:
   redPrincipal:
     external: true
+
