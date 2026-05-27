@@ -1,11 +1,12 @@
 <?php
 
+use App\Http\Controllers\Publico\EmpresaLandingController;
+use App\Http\Controllers\Publico\EmpresaIndexController;
+use App\Http\Controllers\Publico\ReservaController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', [EmpresaIndexController::class, 'index'])->name('home');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -57,3 +58,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/{empresa:slug}', [EmpresaLandingController::class, 'show'])->name('publico.empresa.show');
+Route::get('/{empresa:slug}/reservar', [ReservaController::class, 'create'])->name('publico.reserva.create');
+Route::post('/{empresa:slug}/reservar', [ReservaController::class, 'store'])->name('publico.reserva.store');
+Route::get('/reserva/{token}/resultado', [ReservaController::class, 'resultado'])->name('publico.reserva.resultado');

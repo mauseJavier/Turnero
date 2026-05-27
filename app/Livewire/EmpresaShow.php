@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\TurnoEstado;
 use Livewire\Component;
 use App\Models\Empresa;
 use App\Models\Cliente;
@@ -35,7 +36,8 @@ class EmpresaShow extends Component
     public $turno_fecha_hora;
 
     public $turnos_disponibles = [];
-        public $turnos_disponibles_por_recurso = [];
+    public $turnos_disponibles_por_recurso = [];
+    public $turnos_disponibles_por_servicio = [];
 
     public $turno_fecha_listar;
 
@@ -44,9 +46,9 @@ class EmpresaShow extends Component
 
     public $servicio_filtro_id;
 
+    public $mp_access_token;
+    public $mp_public_key;
 
-
-    
     protected $rules = [
         'cliente_nombre' => 'required|string|max:255',
         'cliente_apellido' => 'required|string|max:255',
@@ -66,9 +68,21 @@ class EmpresaShow extends Component
     public function mount(Empresa $empresa)
     {
         $this->empresa = $empresa;
+        $this->mp_access_token = $empresa->mp_access_token;
+        $this->mp_public_key = $empresa->mp_public_key;
         $this->turno_fecha_listar = date('Y-m-d');
     }
-    
+
+    public function saveMercadoPago()
+    {
+        $this->empresa->update([
+            'mp_access_token' => $this->mp_access_token ?: null,
+            'mp_public_key' => $this->mp_public_key ?: null,
+        ]);
+
+        session()->flash('success_mp', 'Credenciales de Mercado Pago guardadas.');
+    }
+
 
     public function asociarServicioRecurso()
     {
@@ -90,97 +104,18 @@ class EmpresaShow extends Component
     public function listarTurnosDisponiblesPorRecurso()
     {
         $fecha = $this->turno_fecha_listar ?: date('Y-m-d');
-        $resultados = [];
-        $finDia = \Carbon\Carbon::parse($fecha)->endOfDay();
-
-        foreach ($this->empresa->recursos as $recurso) {
-            $slots = [];
-            $inicioTurno = $recurso->inicio_turno ? \Carbon\Carbon::parse($fecha.' '.$recurso->inicio_turno) : \Carbon\Carbon::parse($fecha)->startOfDay();
-            // Solo servicios asociados a este recurso
-            foreach ($recurso->servicios as $servicio) {
-                $duracion = $servicio->duracion_minutos;
-                $horaActual = $inicioTurno->copy();
-                while ($horaActual->addMinutes(0)->lessThan($finDia)) {
-                    $horaFin = $horaActual->copy()->addMinutes($duracion);
-                    if ($horaFin->greaterThan($finDia)) break;
-                    $turnosSuperpuestos = \App\Models\Turno::where('recurso_id', $recurso->id)
-                        ->where('estado', '!=', 'cancelado')
-                        ->where(function($q) use ($horaActual, $horaFin) {
-                            $q->where('fecha_hora_inicio', '<', $horaFin)
-                              ->where('fecha_hora_fin', '>', $horaActual);
-                        })
-                        ->exists();
-                    if (! $turnosSuperpuestos) {
-                        $slots[] = [
-                            'servicio' => $servicio->nombre,
-                            'inicio' => $horaActual->format('Y-m-d H:i'),
-                            'fin' => $horaFin->format('Y-m-d H:i'),
-                            // 'data' => $servicio,
-                            'recurso' => $recurso->nombre,
-                        ];
-                    }
-                    $horaActual->addMinutes($duracion);
-                }
-            }
-            $resultados[$recurso->nombre] = [
-                'slots' => $slots,
-                'cantidad_servicios_disponibles' => count($slots)
-            ];
-        }
-        $this->turnos_disponibles_por_recurso = $resultados;
+        $this->turnos_disponibles_por_recurso = app(DisponibilidadService::class)->listarPorRecurso($this->empresa, $fecha);
     }
 
     public function listarTurnosDisponiblesPorServicio($servicioId = null)
     {
         $fecha = $this->turno_fecha_listar ?: date('Y-m-d');
-        $resultados = [];
-        $finDia = \Carbon\Carbon::parse($fecha)->endOfDay();
-
         $servicioId = $this->servicio_filtro_id ?? $servicioId;
-        $servicios = $this->empresa->servicios;
-        if ($servicioId) {
-            $servicio = $servicios->where('id', $servicioId)->first();
-            if ($servicio) {
-                $servicios = collect([$servicio]);
-            } else {
-                $this->turnos_disponibles_por_servicio = [];
-                return;
-            }
-        }
-
-        foreach ($servicios as $servicio) {
-            $slots = [];
-            foreach ($servicio->recursos as $recurso) {
-                $inicioTurno = $recurso->inicio_turno ? \Carbon\Carbon::parse($fecha.' '.$recurso->inicio_turno) : \Carbon\Carbon::parse($fecha)->startOfDay();
-                $duracion = $servicio->duracion_minutos;
-                $horaActual = $inicioTurno->copy();
-                while ($horaActual->addMinutes(0)->lessThan($finDia)) {
-                    $horaFin = $horaActual->copy()->addMinutes($duracion);
-                    if ($horaFin->greaterThan($finDia)) break;
-                    $turnosSuperpuestos = \App\Models\Turno::where('recurso_id', $recurso->id)
-                        ->where('estado', '!=', 'cancelado')
-                        ->where(function($q) use ($horaActual, $horaFin) {
-                            $q->where('fecha_hora_inicio', '<', $horaFin)
-                              ->where('fecha_hora_fin', '>', $horaActual);
-                        })
-                        ->exists();
-                    if (! $turnosSuperpuestos) {
-                        $slots[] = [
-                            'servicio' => $servicio->nombre,
-                            'recurso' => $recurso->nombre,
-                            'inicio' => $horaActual->format('Y-m-d H:i'),
-                            'fin' => $horaFin->format('Y-m-d H:i'),
-                        ];
-                    }
-                    $horaActual->addMinutes($duracion);
-                }
-            }
-            $resultados[$servicio->nombre] = [
-                'slots' => $slots,
-                'cantidad_recursos_disponibles' => count($slots)
-            ];
-        }
-        $this->turnos_disponibles_por_servicio = $resultados;
+        $this->turnos_disponibles_por_servicio = app(DisponibilidadService::class)->listarPorServicio(
+            $this->empresa,
+            $fecha,
+            $servicioId ? (int) $servicioId : null
+        );
     }
 
 
@@ -236,7 +171,8 @@ class EmpresaShow extends Component
             'recurso_id' => $this->turno_recurso_id,
             'fecha_hora_inicio' => $fechaInicio,
             'fecha_hora_fin' => $fechaFin,
-            'estado' => 'pendiente',
+            'estado' => TurnoEstado::PENDIENTE_PAGO->value,
+            'origen' => 'admin',
         ]);
 
         $this->reset(['turno_cliente_id', 'turno_servicio_id', 'turno_recurso_id', 'turno_fecha_hora']);

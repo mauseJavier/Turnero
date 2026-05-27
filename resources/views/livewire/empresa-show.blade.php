@@ -11,6 +11,24 @@
         <div><strong>Tipo de Servicio:</strong> {{ $empresa->tipo_servicio }}</div>
         <div><strong>Descripción:</strong> {{ $empresa->descripcion }}</div>
         <div><strong>Activo:</strong> {{ $empresa->activo ? 'Sí' : 'No' }}</div>
+
+        <div class="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+            <h3 class="mb-3 font-semibold">Mercado Pago</h3>
+            <form wire:submit.prevent="saveMercadoPago" class="space-y-3">
+                @if (session()->has('success_mp'))
+                    <div class="text-green-600 text-xs">{{ session('success_mp') }}</div>
+                @endif
+                <div>
+                    <label class="mb-1 block text-xs font-medium">Access Token</label>
+                    <input type="password" wire:model="mp_access_token" placeholder="APP_USR-..." class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm font-mono">
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium">Public Key</label>
+                    <input type="text" wire:model="mp_public_key" placeholder="APP_USR-..." class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm font-mono">
+                </div>
+                <button type="submit" class="w-full bg-accent text-white dark:bg-zinc-700 dark:text-white font-semibold py-1 px-2 rounded text-sm">Guardar credenciales</button>
+            </form>
+        </div>
     </div>
 
     <div class="grid md:grid-cols-3 gap-6">

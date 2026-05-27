@@ -2,9 +2,14 @@
 
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\Pagos\MercadoPagoPreferenceController;
+use App\Http\Controllers\Publico\PublicoDisponibilidadController;
+use App\Http\Controllers\Publico\PublicoServiciosController;
+use App\Http\Controllers\Publico\PublicoTurnoController;
 use App\Http\Controllers\RecursoController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\TurnoController;
+use App\Http\Controllers\Webhooks\MercadoPagoWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +72,20 @@ Route::middleware(['auth:sanctum', 'role:admin|super'])->group(function () {
     });
 
 });
+
+Route::middleware('throttle:60,1')->prefix('publico/{empresa}')->group(function () {
+    Route::get('servicios', [PublicoServiciosController::class, 'index']);
+    Route::get('disponibilidad', [PublicoDisponibilidadController::class, 'index']);
+    Route::post('turnos', [PublicoTurnoController::class, 'store']);
+});
+
+Route::middleware('throttle:30,1')->group(function () {
+    Route::post('pagos/mercadopago/preference', [MercadoPagoPreferenceController::class, 'store'])
+        ->name('api.pagos.mercadopago.preference');
+});
+
+Route::post('webhooks/mercadopago', MercadoPagoWebhookController::class)
+    ->name('api.webhooks.mercadopago');
 
 Route::middleware(['auth:sanctum', 'can:edit users'])->group(function () {
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TurnoEstado;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -57,7 +58,7 @@ class Recurso extends Model
         $fechaFin = Carbon::parse($fechaFin)->format('Y-m-d H:i:s');
 
         $query = $this->turnos()
-            ->where('estado', '!=', 'cancelado')
+            ->whereNotIn('estado', [TurnoEstado::CANCELADO->value, TurnoEstado::VENCIDO_PAGO->value])
             ->where(function ($q) use ($fechaInicio, $fechaFin) {
                 // Proper overlap logic: two intervals overlap if start1 < end2 AND end1 > start2
                 $q->where('fecha_hora_inicio', '<', $fechaFin)

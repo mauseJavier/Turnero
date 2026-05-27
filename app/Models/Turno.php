@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TurnoEstado;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,14 +18,31 @@ class Turno extends Model
         'fecha_hora_fin',
         'duracion_personalizada_minutos',
         'estado',
+        'origen',
+        'token_publico_reserva',
+        'fecha_vencimiento_pago',
         'observaciones',
         'precio_final',
+        'pago_proveedor',
+        'pago_preference_id',
+        'pago_id',
+        'pago_status',
+        'pago_status_detail',
+        'pago_init_point',
+        'pago_expires_at',
+        'pagado_at',
+        'monto_pagado',
+        'moneda',
     ];
 
     protected $casts = [
         'fecha_hora_inicio' => 'datetime',
         'fecha_hora_fin' => 'datetime',
+        'fecha_vencimiento_pago' => 'datetime',
+        'pago_expires_at' => 'datetime',
+        'pagado_at' => 'datetime',
         'precio_final' => 'decimal:2',
+        'monto_pagado' => 'decimal:2',
     ];
 
     /**
@@ -67,6 +85,10 @@ class Turno extends Model
         parent::boot();
 
         static::saving(function ($turno) {
+            if (! $turno->estado) {
+                $turno->estado = TurnoEstado::PENDIENTE_PAGO->value;
+            }
+
             // Solo calcular si no se proporciona fecha_hora_fin explícitamente
             if (! $turno->fecha_hora_fin && $turno->servicio) {
                 $turno->calcularFechaHoraFin();
