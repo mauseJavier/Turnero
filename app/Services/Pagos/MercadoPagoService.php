@@ -54,7 +54,15 @@ class MercadoPagoService
 
     public function createPreference(Turno $turno, array $backUrls = []): array
     {
-        $notificationUrl = route('api.webhooks.mercadopago').'?source_news=webhooks';
+        $baseUrl = rtrim(config('app.tunnel_url') ?: config('app.url'), '/');
+
+        $notificationUrl = $baseUrl . route('api.webhooks.mercadopago', absolute: false) . '?source_news=webhooks&empresa_id=' . $turno->empresa_id;
+
+        $unitPrice = round((float) ($turno->precio_final ?? $turno->servicio?->precio ?? 0), 2);
+
+        if ($unitPrice <= 0) {
+            throw new \RuntimeException('El precio del turno debe ser mayor a cero para crear una preferencia de pago.');
+        }
 
         $payload = [
             'items' => [[
@@ -62,14 +70,14 @@ class MercadoPagoService
                 'title' => $turno->servicio?->nombre ?? 'Reserva de turno',
                 'quantity' => 1,
                 'currency_id' => $this->currency,
-                'unit_price' => (float) ($turno->precio_final ?? $turno->servicio?->precio ?? 0),
+                'unit_price' => $unitPrice,
             ]],
             'external_reference' => 'turno:'.$turno->id,
             'notification_url' => $notificationUrl,
             'back_urls' => [
-                'success' => $backUrls['success'] ?? route('publico.reserva.resultado', ['token' => $turno->token_publico_reserva, 'estado' => 'success']),
-                'failure' => $backUrls['failure'] ?? route('publico.reserva.resultado', ['token' => $turno->token_publico_reserva, 'estado' => 'failure']),
-                'pending' => $backUrls['pending'] ?? route('publico.reserva.resultado', ['token' => $turno->token_publico_reserva, 'estado' => 'pending']),
+                'success' => $backUrls['success'] ?? $baseUrl . route('publico.reserva.resultado', ['token' => $turno->token_publico_reserva, 'estado' => 'success'], absolute: false),
+                'failure' => $backUrls['failure'] ?? $baseUrl . route('publico.reserva.resultado', ['token' => $turno->token_publico_reserva, 'estado' => 'failure'], absolute: false),
+                'pending' => $backUrls['pending'] ?? $baseUrl . route('publico.reserva.resultado', ['token' => $turno->token_publico_reserva, 'estado' => 'pending'], absolute: false),
             ],
             'auto_return' => 'approved',
             'metadata' => [

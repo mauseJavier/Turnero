@@ -116,6 +116,7 @@
                         <th>Nombre</th>
                         <th>Descripción</th>
                         <th>Duración (minutos)</th>
+                        <th>Precio</th>
                         <th>Recursos asociados</th>
                     </tr>
                 </thead>
@@ -125,6 +126,7 @@
                             <td>{{ $servicio->nombre }}</td>
                             <td>{{ $servicio->descripcion }}</td>
                             <td>{{ $servicio->duracion_minutos }}</td>
+                            <td>${{ number_format($servicio->precio, 2) }}</td>
                             <td>
                                 @foreach($servicio->recursos as $recurso)
                                     <span class="inline-block bg-zinc-200 dark:bg-zinc-700 rounded px-2 py-1 text-xs mr-1 mb-1">{{ $recurso->nombre }}</span>
@@ -141,6 +143,7 @@
                 <input type="text" wire:model="servicio_nombre" placeholder="Nombre" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <input type="text" wire:model="servicio_descripcion" placeholder="Descripción" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <input type="number" wire:model="servicio_duracion_minutos" placeholder="Duración (minutos)" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
+                <input type="number" wire:model="servicio_precio" placeholder="Precio" step="0.01" min="0" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                 <select wire:model="servicio_recurso_id" class="w-full rounded border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-sm">
                     <option value="">Seleccione un recurso para asociar</option>
                     @foreach($empresa->recursos as $recurso)

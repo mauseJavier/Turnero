@@ -26,6 +26,7 @@ class EmpresaShow extends Component
     public $servicio_nombre;
     public $servicio_descripcion;
     public $servicio_duracion_minutos;
+    public $servicio_precio;
     public $recurso_nombre;
     public $recurso_tipo;
     public $recurso_inicio_turno;
@@ -61,6 +62,7 @@ class EmpresaShow extends Component
         'servicio_nombre' => 'nullable|string|max:255',
         'servicio_descripcion' => 'nullable|string|max:1000',
         'servicio_duracion_minutos' => 'integer|min:1',
+        'servicio_precio' => 'nullable|numeric|min:0',
         'recurso_nombre' => 'nullable|string|max:255',
         'recurso_tipo' => 'nullable|string|max:255',
     ];
@@ -234,10 +236,11 @@ class EmpresaShow extends Component
             'nombre' => $this->servicio_nombre,
             'descripcion' => $this->servicio_descripcion,
             'duracion_minutos' => $this->servicio_duracion_minutos ?? 30,
+            'precio' => $this->servicio_precio ?: null,
         ]);
         // Asociar el servicio con el recurso en la tabla pivote
         $servicio->recursos()->attach($this->servicio_recurso_id);
-        $this->reset(['servicio_nombre', 'servicio_descripcion', 'servicio_duracion_minutos', 'servicio_recurso_id']);
+        $this->reset(['servicio_nombre', 'servicio_descripcion', 'servicio_duracion_minutos', 'servicio_precio', 'servicio_recurso_id']);
         session()->flash('success_servicio', 'Servicio agregado y asociado al recurso correctamente.');
     }
 

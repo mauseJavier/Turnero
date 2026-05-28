@@ -15,10 +15,20 @@ class MercadoPagoWebhookController extends Controller
             return response()->json(['received' => false, 'message' => 'Invalid signature'], 401);
         }
 
+        //loguear el webhook recibido para debug
+        \Log::info('Webhook MercadoPago recibido', [
+            'body' => $request->all(),
+            'query' => $request->query(),
+            'headers' => $request->headers->all(),
+        ]);
+
+        
+
         ProcesarWebhookMercadoPagoJob::dispatch([
             'body' => $request->all(),
             'query' => $request->query(),
             'headers' => $request->headers->all(),
+            'empresa_id' => $request->query('empresa_id'),
         ]);
 
         return response()->json(['received' => true]);

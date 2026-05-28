@@ -1,11 +1,11 @@
 @extends('layouts.publico')
 
 @section('content')
-    <div class="mx-auto max-w-3xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h1 class="text-2xl font-bold">Estado de tu reserva</h1>
+    <flux:card class="mx-auto max-w-3xl p-6">
+        <flux:heading size="lg">Estado de tu reserva</flux:heading>
         <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">Empresa: {{ $turno->empresa->nombre }}</p>
 
-        <div class="mt-4 rounded-lg bg-zinc-100 p-4 text-sm dark:bg-zinc-800">
+        <div class="mt-4 rounded-lg bg-zinc-100 p-4 text-sm text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
             <p><strong>Cliente:</strong> {{ $turno->cliente->nombre_completo }}</p>
             <p><strong>Servicio:</strong> {{ $turno->servicio->nombre }}</p>
             <p><strong>Recurso:</strong> {{ $turno->recurso->nombre }}</p>
@@ -15,9 +15,9 @@
         </div>
 
         @if($turno->pago_init_point && $turno->estado === 'pendiente_pago')
-            <a href="{{ $turno->pago_init_point }}" class="mt-5 inline-flex rounded-lg bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200">
+            <flux:button href="{{ $turno->pago_init_point }}" variant="primary" class="mt-5">
                 Ir a pagar
-            </a>
+            </flux:button>
         @endif
-    </div>
+    </flux:card>
 @endsection

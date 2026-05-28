@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Enums\TurnoEstado;
 use App\Mail\TurnoConfirmadoAdmin;
 use App\Mail\TurnoConfirmadoCliente;
+use App\Models\Empresa;
 use App\Models\Turno;
 use App\Services\Pagos\MercadoPagoService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,10 +22,14 @@ class ProcesarWebhookMercadoPagoJob implements ShouldQueue
     {
     }
 
-    public function handle(MercadoPagoService $mercadoPagoService): void
+    public function handle(): void
     {
         $data = $this->payload['body'] ?? [];
         $query = $this->payload['query'] ?? [];
+        $empresaId = $this->payload['empresa_id'] ?? null;
+
+        $empresa = $empresaId ? Empresa::find($empresaId) : null;
+        $mercadoPagoService = MercadoPagoService::for($empresa);
 
         $type = Arr::get($data, 'type') ?? Arr::get($query, 'type') ?? Arr::get($query, 'topic');
         $paymentId = Arr::get($data, 'data.id') ?? Arr::get($query, 'data_id') ?? Arr::get($data, 'id') ?? Arr::get($query, 'id');
@@ -32,7 +37,9 @@ class ProcesarWebhookMercadoPagoJob implements ShouldQueue
         if ($type !== 'payment' || empty($paymentId)) {
             Log::info('Webhook Mercado Pago ignorado', ['type' => $type, 'payment_id' => $paymentId]);
             return;
-        }
+        }else {
+            Log::info('Procesando webhook de pago', ['payment_id' => $paymentId]);
+        }   
 
         $payment = $mercadoPagoService->getPaymentById((string) $paymentId);
         $externalReference = Arr::get($payment, 'external_reference');
@@ -40,7 +47,9 @@ class ProcesarWebhookMercadoPagoJob implements ShouldQueue
         if (! str_starts_with((string) $externalReference, 'turno:')) {
             Log::warning('Pago sin external_reference de turno', ['payment_id' => $paymentId]);
             return;
-        }
+        }else {
+            Log::info('External reference del pago', ['payment_id' => $paymentId, 'external_reference' => $externalReference]);
+        }   
 
         $turnoId = (int) str_replace('turno:', '', (string) $externalReference);
         $turno = Turno::find($turnoId);
@@ -48,7 +57,9 @@ class ProcesarWebhookMercadoPagoJob implements ShouldQueue
         if (! $turno) {
             Log::warning('Turno no encontrado para pago', ['turno_id' => $turnoId, 'payment_id' => $paymentId]);
             return;
-        }
+        }else {
+            Log::info('Turno encontrado para pago', ['turno_id' => $turnoId, 'payment_id' => $paymentId]);
+        }   
 
         $status = Arr::get($payment, 'status');
         $statusDetail = Arr::get($payment, 'status_detail');
@@ -62,6 +73,9 @@ class ProcesarWebhookMercadoPagoJob implements ShouldQueue
             'monto_pagado' => $monto,
             'moneda' => $currency,
         ];
+
+        Log::info('Actualizando turno con datos de pago', ['turno_id' => $turnoId, 'update_data' => $update]);  
+
 
         $wasConfirmed = $turno->estado === TurnoEstado::CONFIRMADO->value;
 
